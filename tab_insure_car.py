@@ -32,10 +32,10 @@ def insure_car(tab):
     error_lbl.grid(column = 0, row = 7)
 
     btn = Button(tab, text = "Submit", command = insure_click)  
-    btn.grid(column = 0, row = 12)
+    btn.grid(column = 0, row = 12, sticky = W)
 
     btn1 = Button(tab, text = "Clear", command = clear_info_click)  
-    btn1.grid(column = 1, row = 12)
+    btn1.grid(column = 1, row = 12, sticky = W)
 
 def set_values(car):
     global car_to_insure_id

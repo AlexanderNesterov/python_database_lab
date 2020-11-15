@@ -28,9 +28,12 @@ def get_table_with_drivers(tab):
     btn1 = Button(tab, text = "Update selected driver", command = update_driver_click)  
     btn1.grid(column = 2, row = 1)
 
+    btn2 = Button(tab, text = "Remove selected driver", command = remove_driver_click)  
+    btn2.grid(column = 3, row = 1)
+
     global error_lbl
     error_lbl = Label(tab, fg = "#FF0000")  
-    error_lbl.grid(column = 3, row = 1, sticky = W)
+    error_lbl.grid(column = 4, row = 1, sticky = W)
 
     tab_insert_driver.insert_driver(tab)
     tab_update_driver.update_driver(tab)
@@ -48,3 +51,12 @@ def update_driver_click():
         tab_update_driver.set_values(tree.item(id))
     except IndexError:
         error_lbl.configure(text = "Select a driver to update")
+
+def remove_driver_click():
+    error_lbl.configure(text = "")
+    try:
+        id = tree.selection()[0]
+        driver_id = tree.item(id)['text']
+        database.remove_driver_by_id(driver_id)
+    except IndexError:
+        error_lbl.configure(text = "Select a driver to delete")

@@ -7,9 +7,10 @@ def get_penalties_with_info(tab):
 
     global tree
     tree = ttk.Treeview(tab)
-    tree["columns"]=("penalty_date", "description", "mark", "cost", "name")
+    tree["columns"]=("number", "penalty_date", "description", "mark", "cost", "name")
 
-    tree.heading("#0", text = "Number")
+    tree.heading("#0", text = "Id")
+    tree.heading("number", text = "Number")
     tree.heading("penalty_date", text = "Date")
     tree.heading("description", text = "Description")
     tree.heading("mark", text = "Mark")
@@ -19,10 +20,17 @@ def get_penalties_with_info(tab):
     tree.grid(column = 0, row = 0, columnspan = 10)
 
     for penalty in penalties_info:
-        tree.insert(parent = '', index = 'end', text = penalty[0], values = (penalty[1], penalty[2], penalty[3], penalty[4], penalty[5] + ' ' + penalty[6]))
+        tree.insert(parent = '', index = 'end', text = penalty[0], values = (penalty[1], penalty[2], penalty[3], penalty[4], penalty[5], penalty[6] + ' ' + penalty[7]))
 
     refresh_btn = Button(tab, text = "Refresh", command = refresh_click)  
     refresh_btn.grid(column = 2, row = 1, sticky = W)
+
+    remove_btn = Button(tab, text = "Remove", command = remove_penalty_car_click)  
+    remove_btn.grid(column = 3, row = 1, sticky = W)
+
+    global error_lbl
+    error_lbl = Label(tab, fg = "#FF0000")
+    error_lbl.grid(column = 4, row = 1)
 
     cars = database.get_cars()
 
@@ -106,7 +114,17 @@ def refresh_click():
     penalties_info = database.get_penalties_with_info()
     tree.delete(*tree.get_children())
     for penalty in penalties_info:
-        tree.insert(parent = '', index = 'end', text = penalty[0], values = (penalty[1], penalty[2], penalty[3], penalty[4], penalty[5] + ' ' + penalty[6]))
+        tree.insert(parent = '', index = 'end', text = penalty[0], values = (penalty[1], penalty[2], penalty[3], penalty[4], penalty[5], penalty[6] + ' ' + penalty[7]))
+
+    cars = database.get_cars()
+    tree1.delete(*tree1.get_children())
+    for car in cars:
+        tree1.insert(parent = '', index = 'end', text = car[0], values = (car[1], car[2], car[3]))
+
+    penalties = database.get_penalties()
+    tree2.delete(*tree2.get_children())
+    for penalty in penalties:
+        tree2.insert(parent = '', index = 'end', text = penalty[0], values = (penalty[1], penalty[2]))
 
 def select_car_click():
     car_error_lbl.configure(text = "")
@@ -135,5 +153,18 @@ def select_penalty_click():
         penalty_error_lbl.configure(text = "Select a penalty from the table above")
 
 def add_penalty_to_car():
-    now = datetime.now().date()
-    database.insert_penalty_car(selected_penalty['text'], selected_car['text'], now)
+    error_lbl.configure(text = "")
+    try:
+        now = datetime.now().date()
+        database.insert_penalty_car(selected_penalty['text'], selected_car['text'], now)
+    except NameError:
+        error_lbl.configure(text = "Bad car or penalty")
+
+def remove_penalty_car_click():
+    error_lbl.configure(text = "")
+    try:
+        id = tree.selection()[0]
+        penalty_car_id = tree.item(id)['text']
+        database.remove_penalty_car_by_id(penalty_car_id)
+    except IndexError:
+        error_lbl.configure(text = "Select to remove")

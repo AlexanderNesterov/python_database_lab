@@ -6,6 +6,7 @@ import tab_get_driver_information
 import tab_insert_car
 import tab_car_penalties
 import tab_with_cars
+import tab_licence
 
 def start():
     global window
@@ -24,6 +25,7 @@ def start():
     
     tab_control.add(tab1, text = 'Drivers')  
     tab_control.add(tab2, text = 'Penalties')
+    tab_control.add(tab3, text = 'Licence')
     tab_control.add(tab4, text = 'Get penalties with info')
     tab_control.add(tab5, text = 'Get driver\'s inforamtion')
     tab_control.add(tab6, text = 'Cars')
@@ -31,6 +33,7 @@ def start():
 
     tab_with_drivers.get_table_with_drivers(tab1)
     tab_with_penalties.get_table_with_penalties(tab2)
+    tab_licence.licence(tab3)
     tab_car_penalties.get_penalties_with_info(tab4)
     tab_get_driver_information.get_driver_information(tab5)
     tab_with_cars.get_table_with_cars(tab6)

@@ -29,7 +29,7 @@ def init_database(connection, cursor):
             number VARCHAR(10) UNIQUE NOT NULL, 
             start_date DATE NOT NULL, 
             end_date DATE NOT NULL, 
-            driver_id INTEGER NOT NULL REFERENCES driver(id));
+            driver_id INTEGER NOT NULL REFERENCES driver(id) ON DELETE CASCADE);
         """)
 
     cursor.execute("""
@@ -38,7 +38,7 @@ def init_database(connection, cursor):
             mark VARCHAR(32) NOT NULL, 
             number VARCHAR(6) UNIQUE NOT NULL, 
             registration_date DATE NOT NULL, 
-            driver_id INTEGER NOT NULL REFERENCES driver(id));
+            driver_id INTEGER NOT NULL REFERENCES driver(id) ON DELETE CASCADE);
         """)
 
     cursor.execute("""
@@ -46,7 +46,7 @@ def init_database(connection, cursor):
             id INTEGER PRIMARY KEY, 
             insurance_date DATE NOT NULL, 
             insurance_cost INTEGER NOT NULL,  
-            car_id INTEGER NOT NULL REFERENCES car(id));
+            car_id INTEGER NOT NULL REFERENCES car(id) ON DELETE CASCADE);
         """)
 
     cursor.execute("""
@@ -58,8 +58,9 @@ def init_database(connection, cursor):
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS penalty_car (
-            penalty_id INTEGER NOT NULL REFERENCES penalty(id), 
-            car_id INTEGER NOT NULL REFERENCES car(id),
+            id INTEGER PRIMARY KEY,
+            penalty_id INTEGER NOT NULL REFERENCES penalty(id) ON DELETE CASCADE, 
+            car_id INTEGER NOT NULL REFERENCES car(id) ON DELETE CASCADE,
             penalty_date DATE NOT NULL);
         """)
 
@@ -81,6 +82,10 @@ def init_database(connection, cursor):
 
     cursor.execute("""
         CREATE SEQUENCE penalty_sequence INCREMENT 1 START 1;
+        """)
+    
+    cursor.execute("""
+        CREATE SEQUENCE penalty_car_sequence INCREMENT 1 START 1;
         """)
 
     connection.commit()
@@ -126,13 +131,13 @@ def insert_data(connection, cursor):
     """)
 
     cursor.execute("""
-        INSERT INTO penalty_car VALUES(1, 2, '12-10-2020');
-        INSERT INTO penalty_car VALUES(2, 4, '07-01-2019');
-        INSERT INTO penalty_car VALUES(3, 5, '23-05-2018');
-        INSERT INTO penalty_car VALUES(1, 6, '19-02-2020');
-        INSERT INTO penalty_car VALUES(2, 6, '21-09-2017');
-        INSERT INTO penalty_car VALUES(1, 3, '15-04-2019');
-        INSERT INTO penalty_car VALUES(1, 2, '31-08-2016');
+        INSERT INTO penalty_car VALUES(nextval(\'penalty_car_sequence\'), 1, 2, '12-10-2020');
+        INSERT INTO penalty_car VALUES(nextval(\'penalty_car_sequence\'), 2, 4, '07-01-2019');
+        INSERT INTO penalty_car VALUES(nextval(\'penalty_car_sequence\'), 3, 5, '23-05-2018');
+        INSERT INTO penalty_car VALUES(nextval(\'penalty_car_sequence\'), 1, 6, '19-02-2020');
+        INSERT INTO penalty_car VALUES(nextval(\'penalty_car_sequence\'), 2, 6, '21-09-2017');
+        INSERT INTO penalty_car VALUES(nextval(\'penalty_car_sequence\'), 1, 3, '15-04-2019');
+        INSERT INTO penalty_car VALUES(nextval(\'penalty_car_sequence\'), 1, 2, '31-08-2016');
     """)
 
     connection.commit()
@@ -222,7 +227,7 @@ def update_driver(driver_id, first_name, last_name, passport, registration, birt
 
 def get_penalties_with_info():
     cursor.execute("""
-        SELECT car.number, penalty_date, description, car.mark, penalty.cost, driver.first_name, driver.last_name 
+        SELECT penalty_car.id, car.number, penalty_date, description, car.mark, penalty.cost, driver.first_name, driver.last_name 
         FROM penalty_car
         JOIN penalty ON penalty_car.penalty_id = penalty.id
         JOIN car ON penalty_car.car_id = car.id
@@ -244,7 +249,8 @@ def insert_penalty_car(penalty_id, car_id, date):
 
 def get_cars_with_insurance():
     cursor.execute("""
-        SELECT car.id, mark, car.number, registration_date, insurance_date, insurance_cost FROM car
+        SELECT car.id, mark, car.number, registration_date, insurance.id, insurance_date, insurance_cost 
+        FROM car
         LEFT JOIN insurance ON car.id = insurance.car_id;
     """)
     return cursor.fetchall()
@@ -253,4 +259,73 @@ def insert_insurance_car(insurance_date, insurance_cost, car_id):
     cursor.execute("""
         INSERT INTO insurance VALUES(nextval(\'insurance_sequence\'), '{}', '{}', {});
     """.format(insurance_date, insurance_cost, car_id))
+    connection.commit()
+
+def get_drivers_with_licence():
+    cursor.execute("""
+        SELECT driver.id, first_name, last_name, passport, licence.id, licence.number, start_date, end_date
+        FROM driver
+        LEFT JOIN licence ON driver.id = licence.driver_id;
+    """)
+    return cursor.fetchall()
+
+def get_driver_by_licence(licence_number):
+    cursor.execute("""
+        SELECT * FROM licence
+        WHERE number = '{}'
+    """.format(licence_number))
+    return cursor.fetchone()
+
+def insert_licence(number, start_date, end_date, driver_id):
+    cursor.execute("""
+        INSERT INTO licence VALUES(nextval(\'licence_sequence\'), '{}', '{}', '{}', {});
+    """.format(number, start_date, end_date, driver_id))
+    connection.commit()
+
+def remove_driver_by_id(driver_id):
+    cursor.execute("""
+        DELETE FROM driver
+        WHERE id = {}
+    """.format(driver_id))
+    connection.commit()
+
+def remove_car_by_id(car_id):
+    cursor.execute("""
+        DELETE FROM car
+        WHERE id = {}
+    """.format(car_id))
+    connection.commit()
+
+def remove_insurance_by_id(insurance_id):
+    cursor.execute("""
+        DELETE FROM insurance
+        WHERE id = {}
+    """.format(insurance_id))
+    connection.commit()
+
+def remove_licence_by_id(licence_id):
+    cursor.execute("""
+        DELETE FROM licence
+        WHERE id = {}
+    """.format(licence_id))
+    connection.commit()
+
+def remove_penalty_car_by_id(penalty_car_id):
+    cursor.execute("""
+        DELETE FROM penalty_car
+        WHERE id = {}
+    """.format(penalty_car_id))
+    connection.commit()
+
+def remove_penalty_by_id(penalty_id):
+    cursor.execute("""
+        DELETE FROM penalty
+        WHERE id = {}
+    """.format(penalty_id))
+    connection.commit()
+
+def insert_penalty(description, cost):
+    cursor.execute("""
+        INSERT INTO penalty VALUES(nextval(\'penalty_sequence\'), '{}', {});
+    """.format(description, cost))
     connection.commit()

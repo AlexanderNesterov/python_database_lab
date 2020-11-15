@@ -55,48 +55,56 @@ def set_driver_info(passport):
 
     licence_info_lbl = Label(tab, text = "Licence Inforamtion")
     licence_info_lbl.grid(column = 1, row = 1, sticky = W)
-    number_lbl = Label(tab, text = "Number: {}".format(licence[1]))
-    number_lbl.grid(column = 1, row = 2, sticky = W)
-    start_date_lbl = Label(tab, text="Start Date: {}".format(licence[2]))
-    start_date_lbl.grid(column = 1, row = 3, sticky = W)
-    end_date_lbl = Label(tab, text="End Date: {}".format(licence[3]))
-    end_date_lbl.grid(column = 1, row = 4, sticky = W)
+
+    if (licence != None):
+        # licence_info_lbl = Label(tab, text = "Licence Inforamtion")
+        # licence_info_lbl.grid(column = 1, row = 1, sticky = W)
+        number_lbl = Label(tab, text = "Number: {}".format(licence[1]))
+        number_lbl.grid(column = 1, row = 2, sticky = W)
+        start_date_lbl = Label(tab, text="Start Date: {}".format(licence[2]))
+        start_date_lbl.grid(column = 1, row = 3, sticky = W)
+        end_date_lbl = Label(tab, text="End Date: {}".format(licence[3]))
+        end_date_lbl.grid(column = 1, row = 4, sticky = W)
+    else:
+        licence_info_lbl.configure(text = "Licence Inforamtion: This driver doesn't have licence")
 
     cars = database.get_cars_by_driver_id(driver_id)
 
-    tree = ttk.Treeview(tab)
-    tree["columns"]=("mark", "number", "registration_date")
+    if (len(cars) != 0):
+        tree = ttk.Treeview(tab)
+        tree["columns"]=("mark", "number", "registration_date")
 
-    tree.heading("#0", text = "ID")
-    tree.heading("mark", text = "Mark")
-    tree.heading("number", text = "Number")
-    tree.heading("registration_date", text = "Registration Date")
+        tree.heading("#0", text = "ID")
+        tree.heading("mark", text = "Mark")
+        tree.heading("number", text = "Number")
+        tree.heading("registration_date", text = "Registration Date")
 
-    tree.grid(column = 0, row = 9, columnspan = 5)
+        tree.grid(column = 0, row = 9, columnspan = 5)
 
-    for car in cars:
-        tree.insert(parent = '', index = 'end', text = car[0], values = (car[1], car[2], car[3]))
+        for car in cars:
+            tree.insert(parent = '', index = 'end', text = car[0], values = (car[1], car[2], car[3]))
 
-    car_ids = []
-    for car in cars:
-        car_ids.append(car[0])
-    
-    car_ids_str = ("{}".format(car_ids))[1:-1]
-    penalties = database.get_penalties_by_car_ids(car_ids_str)
+        car_ids = []
+        for car in cars:
+            car_ids.append(car[0])
+        
+        car_ids_str = ("{}".format(car_ids))[1:-1]
+        penalties = database.get_penalties_by_car_ids(car_ids_str)
 
-    tree2 = ttk.Treeview(tab)
-    tree2["columns"]=("number", "penalty_date", "description", "cost")
+        if (len(penalties) != 0):
+            tree2 = ttk.Treeview(tab)
+            tree2["columns"]=("number", "penalty_date", "description", "cost")
 
-    tree2.heading("#0", text = "Mark")
-    tree2.heading("number", text = "Number")
-    tree2.heading("penalty_date", text = "Peanlty Date")
-    tree2.heading("description", text = "Description")
-    tree2.heading("cost", text = "Cost")
+            tree2.heading("#0", text = "Mark")
+            tree2.heading("number", text = "Number")
+            tree2.heading("penalty_date", text = "Peanlty Date")
+            tree2.heading("description", text = "Description")
+            tree2.heading("cost", text = "Cost")
 
-    tree2.grid(column = 0, row = 10, columnspan = 5)
+            tree2.grid(column = 0, row = 10, columnspan = 5)
 
-    for penalty in penalties:
-        tree2.insert(parent = '', index = 'end', text = penalty[0], values = (penalty[1], penalty[2], penalty[3], penalty[4]))
+            for penalty in penalties:
+                tree2.insert(parent = '', index = 'end', text = penalty[0], values = (penalty[1], penalty[2], penalty[3], penalty[4]))
 
 def search_for_driver_click():
     error_lbl.configure(text = "")

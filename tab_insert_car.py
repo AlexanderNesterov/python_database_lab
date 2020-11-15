@@ -40,7 +40,7 @@ def insert_car(tab):
     error_lbl.grid(column = 0, row = 7)
 
     btn = Button(tab, text = "Submit", command = clicked)  
-    btn.grid(column = 0, row = 6)
+    btn.grid(column = 0, row = 6, sticky = W)
 
 def check_mark():
     mark = mark_txt.get()
